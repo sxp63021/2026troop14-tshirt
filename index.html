@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Troop 14 – T-Shirt Order Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --scout-green: #1a5c38;
+      --scout-gold:  #f5a623;
+    }
+    body { background: #f4f4ee; font-family: 'Segoe UI', sans-serif; }
+
+    .site-header {
+      background: var(--scout-green);
+      color: #fff;
+      padding: 1.25rem 1.5rem;
+    }
+    .site-header h1 { font-size: 1.5rem; margin: 0; }
+    .site-header p  { margin: 0; opacity: .85; font-size: .9rem; }
+
+    .deadline-banner {
+      background: var(--scout-gold);
+      text-align: center;
+      font-weight: 600;
+      padding: .5rem;
+      font-size: .95rem;
+    }
+
+    .form-card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .section-title {
+      font-weight: 700;
+      color: var(--scout-green);
+      border-bottom: 2px solid var(--scout-green);
+      padding-bottom: .35rem;
+      margin-bottom: 1rem;
+    }
+
+    .price-tag { color: #555; font-size: .85rem; }
+
+    #total-display {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--scout-green);
+    }
+
+    .closed-overlay {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    .closed-overlay h2 { color: #c0392b; }
+
+    #sign-in-wall {
+      text-align: center;
+      padding: 3rem 1rem;
+    }
+    #sign-in-wall p { color: #555; margin-bottom: 1.5rem; }
+
+    #signed-in-bar {
+      background: #eaf5ee;
+      border: 1px solid #b2d8bc;
+      border-radius: 8px;
+      padding: .6rem 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+    #signed-in-bar span { font-size: .9rem; color: #1a5c38; }
+
+    .btn-scout {
+      background: var(--scout-green);
+      color: #fff;
+      border: none;
+    }
+    .btn-scout:hover { background: #14472c; color: #fff; }
+
+    #submission-success {
+      text-align: center;
+      padding: 2rem;
+    }
+    #submission-success h3 { color: var(--scout-green); }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────── -->
+<div class="site-header">
+  <h1>Troop 14 – T-Shirt Order Form</h1>
+  <p>Place your Summer Camp and/or Class B shirt order below.</p>
+</div>
+
+<div class="deadline-banner">
+  Orders close: <strong>May 31, 2026</strong> — submit before midnight!
+</div>
+
+<div class="container mt-4 mb-5" style="max-width:680px;">
+
+  <!-- CLOSED STATE -->
+  <div id="closed-view" class="form-card closed-overlay" style="display:none;">
+    <h2>&#128683; Order Window Closed</h2>
+    <p class="text-muted mt-2">The T-shirt order deadline of <strong>May 31, 2026</strong> has passed.<br>
+    Please contact your troop leader if you have questions.</p>
+  </div>
+
+  <!-- SIGN-IN WALL -->
+  <div id="sign-in-wall" class="form-card" style="display:none;">
+    <h4 style="color:var(--scout-green);">Parent / Guardian Sign-In Required</h4>
+    <p>Please sign in with your Google account to access the order form.<br>
+    Your email will be recorded with the order.</p>
+    <div id="google-signin-btn"></div>
+  </div>
+
+  <!-- SIGNED-IN BAR (inside the form area) -->
+  <div id="signed-in-bar" style="display:none;">
+    <span>&#10003; Signed in as: <strong id="user-email-display"></strong></span>
+    <button class="btn btn-sm btn-outline-secondary" onclick="signOut()">Sign out</button>
+  </div>
+
+  <!-- MAIN FORM -->
+  <form id="order-form" style="display:none;" novalidate>
+
+    <!-- Section 1 – Scout Info -->
+    <div class="form-card">
+      <div class="section-title">Section 1 — Scout Information</div>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="form-label">First Name <span class="text-danger">*</span></label>
+          <input type="text" id="firstName" class="form-control" placeholder="First name" required />
+          <div class="invalid-feedback">First name is required.</div>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Last Name <span class="text-danger">*</span></label>
+          <input type="text" id="lastName" class="form-control" placeholder="Last name" required />
+          <div class="invalid-feedback">Last name is required.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2 – Summer Camp T-Shirt -->
+    <div class="form-card">
+      <div class="section-title">
+        Section 2 — Summer Camp T-Shirt
+        <span class="price-tag fw-normal ms-2">($12.50 each)</span>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Would you like to order a Summer Camp T-Shirt?</label>
+        <div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="campYN" id="campYes" value="yes" onchange="toggleSection('camp')" />
+            <label class="form-check-label" for="campYes">Yes</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="campYN" id="campNo" value="no" onchange="toggleSection('camp')" checked />
+            <label class="form-check-label" for="campNo">No</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="camp-details" style="display:none;">
+        <div class="mb-3">
+          <label class="form-label">Quantity <span class="text-danger">*</span> <small class="text-muted">(max 2)</small></label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="campQty" id="campQty1" value="1" onchange="updateSizes('camp')" />
+              <label class="form-check-label" for="campQty1">1</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="campQty" id="campQty2" value="2" onchange="updateSizes('camp')" />
+              <label class="form-check-label" for="campQty2">2</label>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3" id="camp-sizes">
+          <div class="col-sm-6" id="camp-size1-wrap" style="display:none;">
+            <label class="form-label">Size – Shirt 1 <span class="text-danger">*</span></label>
+            <select id="campSize1" class="form-select">
+              <option value="">— Select size —</option>
+              <option>Youth Small</option>
+              <option>Youth Medium</option>
+              <option>Youth Large</option>
+              <option>Small</option>
+              <option>Medium</option>
+              <option>Large</option>
+              <option>XL</option>
+              <option>XXL</option>
+            </select>
+            <div class="invalid-feedback">Please select a size.</div>
+          </div>
+          <div class="col-sm-6" id="camp-size2-wrap" style="display:none;">
+            <label class="form-label">Size – Shirt 2 <span class="text-danger">*</span></label>
+            <select id="campSize2" class="form-select">
+              <option value="">— Select size —</option>
+              <option>Youth Small</option>
+              <option>Youth Medium</option>
+              <option>Youth Large</option>
+              <option>Small</option>
+              <option>Medium</option>
+              <option>Large</option>
+              <option>XL</option>
+              <option>XXL</option>
+            </select>
+            <div class="invalid-feedback">Please select a size.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3 – Class B T-Shirt -->
+    <div class="form-card">
+      <div class="section-title">
+        Section 3 — Class B T-Shirt
+        <span class="price-tag fw-normal ms-2">($11.50 each)</span>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Would you like to order a Class B T-Shirt?</label>
+        <div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="classbYN" id="classbYes" value="yes" onchange="toggleSection('classb')" />
+            <label class="form-check-label" for="classbYes">Yes</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="classbYN" id="classbNo" value="no" onchange="toggleSection('classb')" checked />
+            <label class="form-check-label" for="classbNo">No</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="classb-details" style="display:none;">
+        <div class="mb-3">
+          <label class="form-label">Quantity <span class="text-danger">*</span> <small class="text-muted">(max 2)</small></label>
+          <div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="classbQty" id="classbQty1" value="1" onchange="updateSizes('classb')" />
+              <label class="form-check-label" for="classbQty1">1</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="classbQty" id="classbQty2" value="2" onchange="updateSizes('classb')" />
+              <label class="form-check-label" for="classbQty2">2</label>
+            </div>
+          </div>
+        </div>
+        <div class="row g-3" id="classb-sizes">
+          <div class="col-sm-6" id="classb-size1-wrap" style="display:none;">
+            <label class="form-label">Size – Shirt 1 <span class="text-danger">*</span></label>
+            <select id="classbSize1" class="form-select">
+              <option value="">— Select size —</option>
+              <option>Youth Small</option>
+              <option>Youth Medium</option>
+              <option>Youth Large</option>
+              <option>Small</option>
+              <option>Medium</option>
+              <option>Large</option>
+              <option>XL</option>
+              <option>XXL</option>
+            </select>
+            <div class="invalid-feedback">Please select a size.</div>
+          </div>
+          <div class="col-sm-6" id="classb-size2-wrap" style="display:none;">
+            <label class="form-label">Size – Shirt 2 <span class="text-danger">*</span></label>
+            <select id="classbSize2" class="form-select">
+              <option value="">— Select size —</option>
+              <option>Youth Small</option>
+              <option>Youth Medium</option>
+              <option>Youth Large</option>
+              <option>Small</option>
+              <option>Medium</option>
+              <option>Large</option>
+              <option>XL</option>
+              <option>XXL</option>
+            </select>
+            <div class="invalid-feedback">Please select a size.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4 – Totals & Payment -->
+    <div class="form-card">
+      <div class="section-title">Section 4 — Order Total &amp; Payment</div>
+
+      <table class="table table-sm mb-3">
+        <tbody>
+          <tr>
+            <td>Summer Camp T-Shirt(s)</td>
+            <td id="camp-line" class="text-end fw-semibold">0 × $12.50 = $0.00</td>
+          </tr>
+          <tr>
+            <td>Class B T-Shirt(s)</td>
+            <td id="classb-line" class="text-end fw-semibold">0 × $11.50 = $0.00</td>
+          </tr>
+          <tr class="table-success">
+            <td class="fw-bold">Total Due</td>
+            <td class="text-end"><span id="total-display">$0.00</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="mb-2">
+        <label class="form-label">Venmo Transaction ID <span class="text-muted">(optional – enter after payment)</span></label>
+        <input type="text" id="venmoId" class="form-control" placeholder="e.g. 12345678901234567" />
+      </div>
+    </div>
+
+    <!-- Section 5 – Submit -->
+    <div class="form-card">
+      <div class="section-title">Section 5 — Submit</div>
+      <p class="text-muted small">Review your order above, then click <strong>Submit Order</strong>. You will see a confirmation on screen and the troop leader will receive an email copy.</p>
+      <div id="form-error" class="alert alert-danger" style="display:none;"></div>
+      <div class="d-flex gap-3 flex-wrap">
+        <button type="submit" class="btn btn-scout btn-lg px-4" id="submit-btn">
+          Submit Order
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="clearForm()">
+          Clear Form
+        </button>
+      </div>
+    </div>
+
+  </form><!-- /#order-form -->
+
+  <!-- SUCCESS STATE -->
+  <div id="submission-success" class="form-card" style="display:none;">
+    <h3>&#10004; Order Submitted!</h3>
+    <p class="text-muted" id="success-details"></p>
+    <button class="btn btn-scout mt-2" onclick="resetAfterSubmit()">Submit another order</button>
+  </div>
+
+</div><!-- /.container -->
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+// ─── CONFIG — fill these in after setup ──────────────────────────────────────
+const GOOGLE_CLIENT_ID  = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+const APPS_SCRIPT_URL   = 'YOUR_APPS_SCRIPT_WEB_APP_URL';
+// ─────────────────────────────────────────────────────────────────────────────
+
+const DEADLINE = new Date('2026-06-01T00:00:00'); // form closes June 1 (i.e. after May 31)
+const CAMP_PRICE   = 12.50;
+const CLASSB_PRICE = 11.50;
+
+let currentUser = null; // { email, name }
+
+// ── Deadline check ────────────────────────────────────────────────────────────
+function isExpired() {
+  return new Date() >= DEADLINE;
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+window.onload = function () {
+  if (isExpired()) {
+    show('closed-view');
+    return;
+  }
+  show('sign-in-wall');
+};
+
+// ── Google Identity Services ──────────────────────────────────────────────────
+window.onGoogleLibraryLoad = function () {
+  if (isExpired()) return;
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: handleCredentialResponse,
+    auto_select: false,
+  });
+  google.accounts.id.renderButton(
+    document.getElementById('google-signin-btn'),
+    { theme: 'filled_green', size: 'large', text: 'signin_with', shape: 'rectangular' }
+  );
+  google.accounts.id.prompt(); // show One Tap if session exists
+};
+
+function handleCredentialResponse(response) {
+  try {
+    const payload = JSON.parse(atob(response.credential.split('.')[1]));
+    currentUser = { email: payload.email, name: payload.name || payload.email };
+    document.getElementById('user-email-display').textContent = currentUser.email;
+    hide('sign-in-wall');
+    show('signed-in-bar');
+    show('order-form');
+  } catch (e) {
+    alert('Sign-in failed. Please try again.');
+  }
+}
+
+function signOut() {
+  google.accounts.id.disableAutoSelect();
+  currentUser = null;
+  hide('order-form');
+  hide('signed-in-bar');
+  hide('submission-success');
+  show('sign-in-wall');
+  clearForm();
+}
+
+// ── Show/Hide helpers ─────────────────────────────────────────────────────────
+function show(id) { document.getElementById(id).style.display = ''; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+// ── Section toggle (Yes/No radios) ───────────────────────────────────────────
+function toggleSection(prefix) {
+  const val = document.querySelector(`input[name="${prefix}YN"]:checked`)?.value;
+  const details = document.getElementById(`${prefix}-details`);
+  if (val === 'yes') {
+    details.style.display = '';
+  } else {
+    details.style.display = 'none';
+    // reset quantity & sizes
+    document.querySelectorAll(`input[name="${prefix}Qty"]`).forEach(r => r.checked = false);
+    hide(`${prefix}-size1-wrap`);
+    hide(`${prefix}-size2-wrap`);
+    document.getElementById(`${prefix}Size1`).value = '';
+    if (document.getElementById(`${prefix}Size2`)) document.getElementById(`${prefix}Size2`).value = '';
+    updateTotal();
+  }
+}
+
+// ── Size dropdowns based on quantity ─────────────────────────────────────────
+function updateSizes(prefix) {
+  const qty = parseInt(document.querySelector(`input[name="${prefix}Qty"]:checked`)?.value || 0);
+  const s1 = document.getElementById(`${prefix}-size1-wrap`);
+  const s2 = document.getElementById(`${prefix}-size2-wrap`);
+
+  if (qty >= 1) { s1.style.display = ''; } else { s1.style.display = 'none'; document.getElementById(`${prefix}Size1`).value = ''; }
+  if (qty === 2) { s2.style.display = ''; } else { s2.style.display = 'none'; if (document.getElementById(`${prefix}Size2`)) document.getElementById(`${prefix}Size2`).value = ''; }
+
+  updateTotal();
+}
+
+// ── Live price calculation ────────────────────────────────────────────────────
+function updateTotal() {
+  const campYes  = document.querySelector('input[name="campYN"]:checked')?.value === 'yes';
+  const classbYes = document.querySelector('input[name="classbYN"]:checked')?.value === 'yes';
+
+  const campQty  = campYes  ? parseInt(document.querySelector('input[name="campQty"]:checked')?.value || 0) : 0;
+  const classbQty = classbYes ? parseInt(document.querySelector('input[name="classbQty"]:checked')?.value || 0) : 0;
+
+  const campTotal   = campQty   * CAMP_PRICE;
+  const classbTotal = classbQty * CLASSB_PRICE;
+  const total       = campTotal + classbTotal;
+
+  document.getElementById('camp-line').textContent   = `${campQty} × $${CAMP_PRICE.toFixed(2)} = $${campTotal.toFixed(2)}`;
+  document.getElementById('classb-line').textContent = `${classbQty} × $${CLASSB_PRICE.toFixed(2)} = $${classbTotal.toFixed(2)}`;
+  document.getElementById('total-display').textContent = `$${total.toFixed(2)}`;
+}
+
+// Attach live update to every relevant input
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input[name="campQty"], input[name="classbQty"], input[name="campYN"], input[name="classbYN"]')
+    .forEach(el => el.addEventListener('change', updateTotal));
+});
+
+// ── Validation ────────────────────────────────────────────────────────────────
+function validateForm() {
+  let errors = [];
+
+  if (!document.getElementById('firstName').value.trim()) errors.push('Scout first name is required.');
+  if (!document.getElementById('lastName').value.trim())  errors.push('Scout last name is required.');
+
+  const campYes = document.querySelector('input[name="campYN"]:checked')?.value === 'yes';
+  if (campYes) {
+    const qty = parseInt(document.querySelector('input[name="campQty"]:checked')?.value || 0);
+    if (!qty) errors.push('Please select a quantity for Summer Camp T-Shirt.');
+    if (qty >= 1 && !document.getElementById('campSize1').value) errors.push('Please select a size for Summer Camp Shirt 1.');
+    if (qty === 2 && !document.getElementById('campSize2').value) errors.push('Please select a size for Summer Camp Shirt 2.');
+  }
+
+  const classbYes = document.querySelector('input[name="classbYN"]:checked')?.value === 'yes';
+  if (classbYes) {
+    const qty = parseInt(document.querySelector('input[name="classbQty"]:checked')?.value || 0);
+    if (!qty) errors.push('Please select a quantity for Class B T-Shirt.');
+    if (qty >= 1 && !document.getElementById('classbSize1').value) errors.push('Please select a size for Class B Shirt 1.');
+    if (qty === 2 && !document.getElementById('classbSize2').value) errors.push('Please select a size for Class B Shirt 2.');
+  }
+
+  if (!campYes && !classbYes) errors.push('Please select at least one shirt type.');
+
+  return errors;
+}
+
+// ── Form submit ───────────────────────────────────────────────────────────────
+document.getElementById('order-form').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const errBox = document.getElementById('form-error');
+  errBox.style.display = 'none';
+
+  const errors = validateForm();
+  if (errors.length) {
+    errBox.innerHTML = errors.map(e => `• ${e}`).join('<br>');
+    errBox.style.display = '';
+    errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  const campYes   = document.querySelector('input[name="campYN"]:checked')?.value === 'yes';
+  const classbYes = document.querySelector('input[name="classbYN"]:checked')?.value === 'yes';
+  const campQty   = campYes   ? parseInt(document.querySelector('input[name="campQty"]:checked')?.value  || 0) : 0;
+  const classbQty = classbYes ? parseInt(document.querySelector('input[name="classbQty"]:checked')?.value || 0) : 0;
+
+  const payload = {
+    timestamp:    new Date().toISOString(),
+    parentEmail:  currentUser.email,
+    parentName:   currentUser.name,
+    scoutFirst:   document.getElementById('firstName').value.trim(),
+    scoutLast:    document.getElementById('lastName').value.trim(),
+    campShirt:    campYes   ? 'Yes' : 'No',
+    campQty:      campQty,
+    campSize1:    campYes && campQty >= 1 ? document.getElementById('campSize1').value : '',
+    campSize2:    campYes && campQty === 2 ? document.getElementById('campSize2').value : '',
+    classbShirt:  classbYes ? 'Yes' : 'No',
+    classbQty:    classbQty,
+    classbSize1:  classbYes && classbQty >= 1 ? document.getElementById('classbSize1').value : '',
+    classbSize2:  classbYes && classbQty === 2 ? document.getElementById('classbSize2').value : '',
+    campTotal:    (campQty   * CAMP_PRICE).toFixed(2),
+    classbTotal:  (classbQty * CLASSB_PRICE).toFixed(2),
+    grandTotal:   (campQty * CAMP_PRICE + classbQty * CLASSB_PRICE).toFixed(2),
+    venmoId:      document.getElementById('venmoId').value.trim(),
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode:   'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body:   JSON.stringify(payload),
+    });
+
+    hide('order-form');
+    hide('signed-in-bar');
+    document.getElementById('success-details').innerHTML =
+      `Order for <strong>${payload.scoutFirst} ${payload.scoutLast}</strong> received!<br>
+       Total: <strong>$${payload.grandTotal}</strong><br>
+       A copy has been sent to the troop leader.<br><br>
+       <span class="text-muted small">Signed in as ${payload.parentEmail}</span>`;
+    show('submission-success');
+  } catch (err) {
+    errBox.textContent = 'Submission failed. Please check your connection and try again.';
+    errBox.style.display = '';
+    btn.disabled = false;
+    btn.textContent = 'Submit Order';
+  }
+});
+
+// ── Clear form ────────────────────────────────────────────────────────────────
+function clearForm() {
+  document.getElementById('firstName').value = '';
+  document.getElementById('lastName').value  = '';
+
+  ['camp', 'classb'].forEach(prefix => {
+    document.querySelector(`input[name="${prefix}YN"][value="no"]`).checked = true;
+    toggleSection(prefix);
+  });
+
+  document.getElementById('venmoId').value = '';
+  document.getElementById('form-error').style.display = 'none';
+  updateTotal();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetAfterSubmit() {
+  hide('submission-success');
+  clearForm();
+  show('signed-in-bar');
+  show('order-form');
+}
+</script>
+
+</body>
+</html>
