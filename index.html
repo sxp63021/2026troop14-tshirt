@@ -150,7 +150,7 @@
     <div class="form-card">
       <div class="section-title">
         Section 2 — Summer Camp T-Shirt
-        <span class="price-tag fw-normal ms-2">($12.50 each)</span>
+        <span class="price-tag fw-normal ms-2">($12.50 · XXL: $15.00)</span>
       </div>
 
       <div class="mb-3">
@@ -169,7 +169,7 @@
 
       <div id="camp-details" style="display:none;">
         <div class="mb-3">
-          <label class="form-label">Quantity <span class="text-danger">*</span> <small class="text-muted">(max 2)</small></label>
+          <label class="form-label">Quantity <span class="text-danger">*</span> <small class="text-muted">(max 2 per order)</small></label>
           <div>
             <div class="form-check form-check-inline">
               <input class="form-check-input" type="radio" name="campQty" id="campQty1" value="1" onchange="updateSizes('camp')" />
@@ -220,7 +220,7 @@
     <div class="form-card">
       <div class="section-title">
         Section 3 — Class B T-Shirt
-        <span class="price-tag fw-normal ms-2">($11.50 each)</span>
+        <span class="price-tag fw-normal ms-2">($12.50 · XXL: $15.00)</span>
       </div>
 
       <div class="mb-3">
@@ -239,7 +239,7 @@
 
       <div id="classb-details" style="display:none;">
         <div class="mb-3">
-          <label class="form-label">Quantity <span class="text-danger">*</span> <small class="text-muted">(max 2)</small></label>
+          <label class="form-label">Quantity <span class="text-danger">*</span> <small class="text-muted">(max 2 per order)</small></label>
           <div>
             <div class="form-check form-check-inline">
               <input class="form-check-input" type="radio" name="classbQty" id="classbQty1" value="1" onchange="updateSizes('classb')" />
@@ -339,6 +339,8 @@
 
 </div><!-- /.container -->
 
+<footer class="text-center text-muted py-3" style="font-size:.75rem;">v2</footer>
+
 <!-- Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
@@ -348,8 +350,8 @@ const APPS_SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbyszcfv5tPB5o
 // ─────────────────────────────────────────────────────────────────────────────
 
 const DEADLINE = new Date('2026-06-01T00:00:00'); // form closes June 1 (i.e. after May 31)
-const CAMP_PRICE   = 12.50;
-const CLASSB_PRICE = 11.50;
+const BASE_PRICE = 12.50;
+const XXL_PRICE  = 15.00;
 
 let currentUser = null; // { email, name }
 
@@ -440,6 +442,17 @@ function updateSizes(prefix) {
 }
 
 // ── Live price calculation ────────────────────────────────────────────────────
+function getShirtPrice(prefix, num) {
+  const el = document.getElementById(`${prefix}Size${num}`);
+  return (el && el.value === 'XXL') ? XXL_PRICE : BASE_PRICE;
+}
+
+function calcShirtTotal(prefix, qty) {
+  let total = 0;
+  for (let i = 1; i <= qty; i++) total += getShirtPrice(prefix, i);
+  return total;
+}
+
 function updateTotal() {
   const campYes  = document.querySelector('input[name="campYN"]:checked')?.value === 'yes';
   const classbYes = document.querySelector('input[name="classbYN"]:checked')?.value === 'yes';
@@ -447,18 +460,18 @@ function updateTotal() {
   const campQty  = campYes  ? parseInt(document.querySelector('input[name="campQty"]:checked')?.value || 0) : 0;
   const classbQty = classbYes ? parseInt(document.querySelector('input[name="classbQty"]:checked')?.value || 0) : 0;
 
-  const campTotal   = campQty   * CAMP_PRICE;
-  const classbTotal = classbQty * CLASSB_PRICE;
+  const campTotal   = calcShirtTotal('camp',   campQty);
+  const classbTotal = calcShirtTotal('classb', classbQty);
   const total       = campTotal + classbTotal;
 
-  document.getElementById('camp-line').textContent   = `${campQty} × $${CAMP_PRICE.toFixed(2)} = $${campTotal.toFixed(2)}`;
-  document.getElementById('classb-line').textContent = `${classbQty} × $${CLASSB_PRICE.toFixed(2)} = $${classbTotal.toFixed(2)}`;
+  document.getElementById('camp-line').textContent   = `$${campTotal.toFixed(2)}`;
+  document.getElementById('classb-line').textContent = `$${classbTotal.toFixed(2)}`;
   document.getElementById('total-display').textContent = `$${total.toFixed(2)}`;
 }
 
 // Attach live update to every relevant input
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('input[name="campQty"], input[name="classbQty"], input[name="campYN"], input[name="classbYN"]')
+  document.querySelectorAll('input[name="campQty"], input[name="classbQty"], input[name="campYN"], input[name="classbYN"], #campSize1, #campSize2, #classbSize1, #classbSize2')
     .forEach(el => el.addEventListener('change', updateTotal));
 });
 
@@ -528,9 +541,9 @@ document.getElementById('order-form').addEventListener('submit', async function 
     classbQty:    classbQty,
     classbSize1:  classbYes && classbQty >= 1 ? document.getElementById('classbSize1').value : '',
     classbSize2:  classbYes && classbQty === 2 ? document.getElementById('classbSize2').value : '',
-    campTotal:    (campQty   * CAMP_PRICE).toFixed(2),
-    classbTotal:  (classbQty * CLASSB_PRICE).toFixed(2),
-    grandTotal:   (campQty * CAMP_PRICE + classbQty * CLASSB_PRICE).toFixed(2),
+    campTotal:    calcShirtTotal('camp',   campQty).toFixed(2),
+    classbTotal:  calcShirtTotal('classb', classbQty).toFixed(2),
+    grandTotal:   (calcShirtTotal('camp', campQty) + calcShirtTotal('classb', classbQty)).toFixed(2),
     venmoId:      document.getElementById('venmoId').value.trim(),
   };
 
