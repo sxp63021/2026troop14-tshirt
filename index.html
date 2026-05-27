@@ -294,11 +294,11 @@
         <tbody>
           <tr>
             <td>Summer Camp T-Shirt(s)</td>
-            <td id="camp-line" class="text-end fw-semibold">0 × $12.50 = $0.00</td>
+            <td id="camp-line" class="text-end fw-semibold">—</td>
           </tr>
           <tr>
             <td>Class B T-Shirt(s)</td>
-            <td id="classb-line" class="text-end fw-semibold">0 × $11.50 = $0.00</td>
+            <td id="classb-line" class="text-end fw-semibold">—</td>
           </tr>
           <tr class="table-success">
             <td class="fw-bold">Total Due</td>
@@ -464,8 +464,8 @@ function updateTotal() {
   const classbTotal = calcShirtTotal('classb', classbQty);
   const total       = campTotal + classbTotal;
 
-  document.getElementById('camp-line').textContent   = `$${campTotal.toFixed(2)}`;
-  document.getElementById('classb-line').textContent = `$${classbTotal.toFixed(2)}`;
+  document.getElementById('camp-line').textContent   = campQty   ? `$${campTotal.toFixed(2)}`   : '—';
+  document.getElementById('classb-line').textContent = classbQty ? `$${classbTotal.toFixed(2)}` : '—';
   document.getElementById('total-display').textContent = `$${total.toFixed(2)}`;
 }
 
